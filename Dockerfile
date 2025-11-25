@@ -1,31 +1,63 @@
-
-FROM node:19-alpine3.15 as dev-deps
+# ===========================
+#   1) DEPENDENCIAS DE DESARROLLO
+# ===========================
+FROM node:19-alpine3.15 AS dev-deps
 WORKDIR /app
-COPY package.json package.json
-RUN yarn install --frozen-lockfile
+
+# Copiamos los archivos necesarios para instalar dependencias
+COPY package.json package-lock.json ./
+
+# Instalación determinística (reproducible)
+RUN npm ci
 
 
-FROM node:19-alpine3.15 as builder
+# ===========================
+#   2) BUILDER
+# ===========================
+FROM node:19-alpine3.15 AS builder
 WORKDIR /app
+
+# Copiamos node_modules desde la etapa anterior
 COPY --from=dev-deps /app/node_modules ./node_modules
+
+# Copiamos el resto del proyecto
 COPY . .
-# RUN yarn test
-RUN yarn build
 
-FROM node:19-alpine3.15 as prod-deps
+# Compile Typescript / Build de la app
+RUN npm run build
+
+
+# ===========================
+#   3) DEPENDENCIAS DE PRODUCCIÓN
+# ===========================
+FROM node:19-alpine3.15 AS prod-deps
 WORKDIR /app
-COPY package.json package.json
-RUN yarn install --prod --frozen-lockfile
+
+COPY package.json package-lock.json ./
+
+# Solo dependencias de producción
+RUN npm ci --omit=dev
 
 
-FROM node:19-alpine3.15 as prod
+# ===========================
+#   4) IMAGEN FINAL
+# ===========================
+FROM node:19-alpine3.15 AS prod
+WORKDIR /app
 EXPOSE 3000
-WORKDIR /app
-ENV APP_VERSION=${APP_VERSION}
+
+# Si usas una variable de build
+#ENV APP_VERSION=${APP_VERSION}
+
+# Copy dependencias de producción
 COPY --from=prod-deps /app/node_modules ./node_modules
+
+# Copy dist generado por el builder
 COPY --from=builder /app/dist ./dist
 
-CMD [ "node","dist/main.js"]
+# Comando final
+CMD ["node", "dist/main.js"]
+
 
 
 
