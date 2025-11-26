@@ -30,18 +30,20 @@ jobs:
       env:
         DOCKER_USER: ${{ secrets.DOCKER_USER }}
         DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
-        NEXT_VERSION: ${{ steps.version.outputs.version }}
       run: |
         echo "Starting login on Antonio's DockerHub repository ..."
         docker login -u $DOCKER_USER -p $DOCKER_PASS
-        echo "New vwersion: $NEXT_VERSION *********** "
 
-#    - name: Build Docker image locally
-#      run: |
-#        docker build --tag 4ht0h10/graphql-actions:2.3 .
-#        docker build --tag 4ht0h10/graphql-actions:latest .
-#
-#    - name: Push Docker image to DockerHub
-#      run: |
-#        docker push 4ht0h10/graphql-actions:2.3
-#        docker push 4ht0h10/graphql-actions:latest
+    - name: Build Docker image locally
+      env:
+        NEW_VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        docker build --tag 4ht0h10/graphql-actions:$NEW_VERSION .
+        docker build --tag 4ht0h10/graphql-actions:latest .
+
+    - name: Push Docker image to DockerHub
+      env:
+        NEW_VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        docker push 4ht0h10/graphql-actions:$NEW_VERSION
+        docker push 4ht0h10/graphql-actions:latest
