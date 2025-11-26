@@ -31,8 +31,10 @@ jobs:
 
     - name: Build Docker image locally
       run: |
-        docker build --tag 4ht0h10/graphql-actions:0.3 .
+        docker build --tag 4ht0h10/graphql-actions:2.3 .
+        docker build --tag 4ht0h10/graphql-actions:latest .
 
     - name: Push Docker image to DockerHub
       run: |
-        docker push 4ht0h10/graphql-actions:0.3
+        docker push 4ht0h10/graphql-actions:2.3
+        docker push 4ht0h10/graphql-actions:latest
