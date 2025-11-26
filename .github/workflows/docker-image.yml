@@ -29,4 +29,10 @@ jobs:
         docker login -u $DOCKER_USER -p $DOCKER_PASS
         echo "DockerHub login success."
 
+    - name: Build Docker image locally
+      run: |
+        docker build --tag 4ht0h10/graphql-actions:0.3 .
 
+    - name: Push Docker image to DockerHub
+      run: |
+        docker push 4ht0h10/graphql-actions:0.3
